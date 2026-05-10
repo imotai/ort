@@ -903,6 +903,20 @@ pub type OrtCustomCreateThreadFn = Option<
 >;
 #[doc = " \\brief Custom thread join function\n\n Onnxruntime thread pool destructor will call the function to join a custom thread.\n Argument ort_custom_thread_handle is the value returned by OrtCustomCreateThreadFn"]
 pub type OrtCustomJoinThreadFn = Option<unsafe extern "system" fn(ort_custom_thread_handle: OrtCustomThreadHandle)>;
+pub type OrtThreadPoolWorkEnqueueFn = Option<unsafe extern "system" fn(user_context: *mut c_void) -> *mut c_void>;
+pub type OrtThreadPoolWorkStartFn = Option<unsafe extern "system" fn(user_context: *mut c_void, enqueue_data: *mut c_void)>;
+pub type OrtThreadPoolWorkStopFn = Option<unsafe extern "system" fn(user_context: *mut c_void, enqueue_data: *mut c_void)>;
+pub type OrtThreadPoolWorkAbandonFn = Option<unsafe extern "system" fn(user_context: *mut c_void, enqueue_data: *mut c_void)>;
+#[repr(C)]
+#[derive(Default, Debug, Clone)]
+pub struct OrtThreadPoolCallbacksConfig {
+	version: u32,
+	on_enqueue: OrtThreadPoolWorkEnqueueFn,
+	on_start_work: OrtThreadPoolWorkStartFn,
+	on_stop_work: OrtThreadPoolWorkStopFn,
+	on_abandon: OrtThreadPoolWorkAbandonFn,
+	user_context: *mut c_void
+}
 #[doc = " \\brief Callback function for RunAsync\n\n \\param[in] user_data User specific data that passed back to the callback\n \\param[out] outputs On succeed, outputs host inference results, on error, the value will be nullptr\n \\param[out] num_outputs Number of outputs, on error, the value will be zero\n \\param[out] status On error, status will provide details"]
 pub type RunAsyncCallbackFn =
 	Option<unsafe extern "system" fn(user_data: *mut core::ffi::c_void, outputs: *mut *mut OrtValue, num_outputs: usize, status: OrtStatusPtr)>;
@@ -2016,7 +2030,21 @@ pub struct OrtApi {
 		elem_type: *mut ONNXTensorElementDataType,
 		shape_data: *mut *const i64,
 		shape_data_count: *mut usize
-	) -> OrtStatusPtr
+	) -> OrtStatusPtr,
+	#[cfg(feature = "api-25")]
+	pub RunOptionsEnableProfiling: unsafe extern "system" fn(options: *mut OrtRunOptions, profile_file_prefix: *const os_char) -> OrtStatusPtr,
+	#[cfg(feature = "api-25")]
+	pub RunOptionsDisableProfiling: unsafe extern "system" fn(options: *mut OrtRunOptions) -> OrtStatusPtr,
+	#[cfg(feature = "api-25")]
+	pub KernelInfoGetAttributeArray_string: unsafe extern "system" fn(
+		info: *const OrtKernelInfo,
+		name: *const c_char,
+		allocator: *mut OrtAllocator,
+		out: *mut *mut *mut char,
+		size: *mut usize
+	) -> OrtStatusPtr,
+	#[cfg(feature = "api-25")]
+	pub SetPerSessionThreadPoolCallbacks: unsafe extern "system" fn(env: *mut OrtEnv, config: *const OrtThreadPoolCallbacksConfig) -> OrtStatusPtr
 }
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]

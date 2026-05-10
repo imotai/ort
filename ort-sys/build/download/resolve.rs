@@ -59,7 +59,7 @@ pub fn resolve_dist() -> Result<Distribution, Option<String>> {
 		};
 		feature_set.push(cuda_feature);
 	} else if cfg!(feature = "nvrtx") {
-		// CUDA builds include NVRTX; only use the standalone NVRTX build if we aren't using CUDA as well
+		// CUDA 13 builds include NVRTX; only use the standalone NVRTX build if we aren't using CUDA as well
 		feature_set.push("nvrtx");
 	}
 	if cfg!(feature = "rocm") {

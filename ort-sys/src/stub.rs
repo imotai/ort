@@ -2493,6 +2493,32 @@ unsafe extern "system" fn GetTensorElementTypeAndShapeDataReference(
 	Error::new_sys(OrtErrorCode::ORT_NOT_IMPLEMENTED, "Unimplemented")
 }
 
+#[cfg(feature = "api-25")]
+unsafe extern "system" fn RunOptionsEnableProfiling(options: *mut OrtRunOptions, profile_file_prefix: *const os_char) -> OrtStatusPtr {
+	OrtStatusPtr::default()
+}
+
+#[cfg(feature = "api-25")]
+unsafe extern "system" fn RunOptionsDisableProfiling(options: *mut OrtRunOptions) -> OrtStatusPtr {
+	OrtStatusPtr::default()
+}
+
+#[cfg(feature = "api-25")]
+unsafe extern "system" fn KernelInfoGetAttributeArray_string(
+	info: *const OrtKernelInfo,
+	name: *const c_char,
+	allocator: *mut OrtAllocator,
+	out: *mut *mut *mut char,
+	size: *mut usize
+) -> OrtStatusPtr {
+	Error::new_sys(OrtErrorCode::ORT_NOT_IMPLEMENTED, "Unimplemented")
+}
+
+#[cfg(feature = "api-25")]
+unsafe extern "system" fn SetPerSessionThreadPoolCallbacks(env: *mut OrtEnv, config: *const OrtThreadPoolCallbacksConfig) -> OrtStatusPtr {
+	Error::new_sys(OrtErrorCode::ORT_NOT_IMPLEMENTED, "Unimplemented")
+}
+
 pub const fn api() -> OrtApi {
 	OrtApi {
 		CreateStatus,
@@ -3046,6 +3072,14 @@ pub const fn api() -> OrtApi {
 		#[cfg(feature = "api-24")]
 		RunOptionsSetSyncStream,
 		#[cfg(feature = "api-24")]
-		GetTensorElementTypeAndShapeDataReference
+		GetTensorElementTypeAndShapeDataReference,
+		#[cfg(feature = "api-25")]
+		RunOptionsEnableProfiling,
+		#[cfg(feature = "api-25")]
+		RunOptionsDisableProfiling,
+		#[cfg(feature = "api-25")]
+		KernelInfoGetAttributeArray_string,
+		#[cfg(feature = "api-25")]
+		SetPerSessionThreadPoolCallbacks
 	}
 }
