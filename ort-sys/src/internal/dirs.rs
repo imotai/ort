@@ -194,5 +194,8 @@ fn cache_dir_default() -> Option<PathBuf> {
 }
 
 pub fn cache_dir() -> Option<PathBuf> {
+	#[cfg(miri)]
+	return Some(PathBuf::from("."));
+
 	std::env::var_os("ORT_CACHE_DIR").map(PathBuf::from).or_else(cache_dir_default)
 }
