@@ -1,6 +1,6 @@
 unsafe extern "C" {
 	#[link_name = "\n\nThe ort-sys crate could not link to ONNX Runtime because:
-	- `libonnxruntime` is not configured via `pkg-config`
+	- `libonnxruntime` is not configured via `pkg-config`, or the `pkg-config` feature is not enabled
 	- ort-sys was instructed not to download prebuilt binaries (`cargo build --offline`), or the `download-binaries` feature is not enabled
 	- Neither `ORT_LIB_PATH` or `ORT_IOS_XCFWK_PATH` (for iOS) were set to link to custom binaries
 
