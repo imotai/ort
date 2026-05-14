@@ -1,13 +1,15 @@
 use alloc::{boxed::Box, vec::Vec};
-use core::{ffi::c_void, slice};
+use core::{ffi::c_void, ptr::NonNull, slice};
 
 use js_sys::Uint8Array;
 use ort::{AsPointer, value::ValueTypeMarker};
 use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{HtmlImageElement, ImageBitmap, ImageData};
 
+pub use crate::binding::{ImageFormat, ImageNorm, ImageTensorLayout};
 use crate::{
 	Error,
-	binding::{self, DataType},
+	binding::{self, DataType, ImageDataType},
 	memory::MemoryInfo,
 	util::num_elements
 };
@@ -249,5 +251,193 @@ impl<T: ValueTypeMarker> ValueExt for ort::value::Value<T> {
 
 		let tensor: &mut Tensor = unsafe { &mut *ptr.cast() };
 		tensor.sync(direction).await
+	}
+}
+
+#[derive(Default)]
+pub struct TensorFromImageOptions {
+	pub norm: Option<ImageNorm>,
+	pub resized_height: Option<u32>,
+	pub resized_width: Option<u32>,
+	pub tensor_format: Option<ImageFormat>,
+	pub tensor_layout: Option<ImageTensorLayout>
+}
+
+#[derive(Default)]
+pub struct TensorFromUrlOptions {
+	pub norm: Option<ImageNorm>,
+	pub resized_height: Option<u32>,
+	pub resized_width: Option<u32>,
+	pub tensor_format: Option<ImageFormat>,
+	pub tensor_layout: Option<ImageTensorLayout>
+}
+
+#[allow(async_fn_in_trait)]
+pub trait TensorFromImage: Sized {
+	private_trait!();
+
+	async fn from_image_data(image_data: &ImageData, options: TensorFromImageOptions) -> crate::Result<Self>;
+	async fn from_image_element(image_element: &HtmlImageElement, options: TensorFromImageOptions) -> crate::Result<Self>;
+	async fn from_image_bitmap(image_bitmap: &ImageBitmap, options: TensorFromImageOptions) -> crate::Result<Self>;
+	async fn from_image_url(url: &str, options: TensorFromImageOptions, original_dimensions: Option<(u32, u32)>) -> crate::Result<Self>;
+}
+
+impl TensorFromImage for ort::value::Tensor<f32> {
+	private_impl!();
+
+	async fn from_image_data(image: &ImageData, options: TensorFromImageOptions) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_data(
+				image,
+				&binding::TensorFromImageOptions {
+					data_type: Some(ImageDataType::Float32),
+					norm: options.norm,
+					resized_height: options.resized_height,
+					resized_width: options.resized_width,
+					tensor_format: options.tensor_format,
+					tensor_layout: options.tensor_layout
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+
+	async fn from_image_element(image: &HtmlImageElement, options: TensorFromImageOptions) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_element(
+				image,
+				&binding::TensorFromImageOptions {
+					data_type: Some(ImageDataType::Float32),
+					norm: options.norm,
+					resized_height: options.resized_height,
+					resized_width: options.resized_width,
+					tensor_format: options.tensor_format,
+					tensor_layout: options.tensor_layout
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+
+	async fn from_image_bitmap(image: &ImageBitmap, options: TensorFromImageOptions) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_bitmap(
+				image,
+				&binding::TensorFromImageOptions {
+					data_type: Some(ImageDataType::Float32),
+					norm: options.norm,
+					resized_height: options.resized_height,
+					resized_width: options.resized_width,
+					tensor_format: options.tensor_format,
+					tensor_layout: options.tensor_layout
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+
+	async fn from_image_url(url: &str, options: TensorFromImageOptions, original_dimensions: Option<(u32, u32)>) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_url(
+				url,
+				&binding::TensorFromUrlOptions {
+					base: binding::TensorFromImageOptions {
+						data_type: Some(ImageDataType::Float32),
+						norm: options.norm,
+						resized_height: options.resized_height,
+						resized_width: options.resized_width,
+						tensor_format: options.tensor_format,
+						tensor_layout: options.tensor_layout
+					},
+					width: original_dimensions.map(|(w, _)| w),
+					height: original_dimensions.map(|(_, h)| h)
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+}
+
+impl TensorFromImage for ort::value::Tensor<u8> {
+	private_impl!();
+
+	async fn from_image_data(image: &ImageData, options: TensorFromImageOptions) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_data(
+				image,
+				&binding::TensorFromImageOptions {
+					data_type: Some(ImageDataType::Uint8),
+					norm: options.norm,
+					resized_height: options.resized_height,
+					resized_width: options.resized_width,
+					tensor_format: options.tensor_format,
+					tensor_layout: options.tensor_layout
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+
+	async fn from_image_element(image: &HtmlImageElement, options: TensorFromImageOptions) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_element(
+				image,
+				&binding::TensorFromImageOptions {
+					data_type: Some(ImageDataType::Uint8),
+					norm: options.norm,
+					resized_height: options.resized_height,
+					resized_width: options.resized_width,
+					tensor_format: options.tensor_format,
+					tensor_layout: options.tensor_layout
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+
+	async fn from_image_bitmap(image: &ImageBitmap, options: TensorFromImageOptions) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_bitmap(
+				image,
+				&binding::TensorFromImageOptions {
+					data_type: Some(ImageDataType::Uint8),
+					norm: options.norm,
+					resized_height: options.resized_height,
+					resized_width: options.resized_width,
+					tensor_format: options.tensor_format,
+					tensor_layout: options.tensor_layout
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
+	}
+
+	async fn from_image_url(url: &str, options: TensorFromImageOptions, original_dimensions: Option<(u32, u32)>) -> crate::Result<Self> {
+		let tensor = Tensor::from_tensor(
+			binding::Tensor::from_image_url(
+				url,
+				&binding::TensorFromUrlOptions {
+					base: binding::TensorFromImageOptions {
+						data_type: Some(ImageDataType::Uint8),
+						norm: options.norm,
+						resized_height: options.resized_height,
+						resized_width: options.resized_width,
+						tensor_format: options.tensor_format,
+						tensor_layout: options.tensor_layout
+					},
+					width: original_dimensions.map(|(w, _)| w),
+					height: original_dimensions.map(|(_, h)| h)
+				}
+			)
+			.await?
+		);
+		Ok(unsafe { ort::value::Tensor::from_ptr(NonNull::from_mut(Box::leak(Box::new(tensor))).cast(), None) })
 	}
 }

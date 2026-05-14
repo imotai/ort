@@ -96,7 +96,7 @@ impl TensorFromImageOptions {
 #[serde(rename_all = "camelCase")]
 pub struct TensorFromUrlOptions {
 	#[serde(flatten)]
-	base: TensorFromImageOptions,
+	pub base: TensorFromImageOptions,
 	pub width: Option<u32>,
 	pub height: Option<u32>
 }
