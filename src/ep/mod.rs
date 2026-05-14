@@ -76,6 +76,8 @@ pub mod webgpu;
 pub use self::webgpu::WebGPU;
 pub mod azure;
 pub use self::azure::Azure;
+pub mod vsinpu;
+pub use self::vsinpu::VSINPU;
 pub mod nvrtx;
 pub use self::nvrtx::NVRTX;
 #[cfg(target_arch = "wasm32")]

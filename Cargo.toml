@@ -102,6 +102,7 @@ qnn = [ "ort-sys/qnn" ]
 webgpu = [ "ort-sys/webgpu" ]
 azure = [ "ort-sys/azure" ]
 nvrtx = [ "ort-sys/nvrtx" ]
+vsinpu = [ "ort-sys/vsinpu" ]
 
 [dependencies]
 ort-sys = { version = "=2.0.0-rc.12", path = "ort-sys", default-features = false }

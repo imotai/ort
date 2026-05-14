@@ -59,6 +59,7 @@ qnn = []
 webgpu = [ "dep:glob" ]
 azure = []
 nvrtx = []
+vsinpu = []
 
 tls-rustls = [ "tls-rustls-no-provider", "ureq?/rustls" ]
 tls-rustls-no-provider = [ "__tls", "ureq?/rustls-no-provider" ]
